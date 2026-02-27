@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>ババ抜き</title>
+  <title>ババ抜き（GitHub Pages版）</title>
   <meta name="theme-color" content="#0b1220"/>
   <style>
     *{box-sizing:border-box}
@@ -309,10 +309,9 @@
       100%{ transform: translate3d(var(--dx), var(--dy), 0) rotate(8deg) scale(.96); opacity: 0; }
     }
 
-    /* 画面切替 */
     .hidden{ display:none !important; }
 
-    /* ===== 追加：引いたカード確認（リビール）アニメ ===== */
+    /* ===== 引いたカード確認（人間のみ）フリップ演出 ===== */
     .revealWrap{
       margin-top:12px;
       display:flex;
@@ -359,7 +358,6 @@
     .popIn{ animation: popIn .22s ease-out; }
     @keyframes popIn{ from{transform:translateY(8px) scale(.98); opacity:0} to{transform:translateY(0) scale(1); opacity:1} }
 
-    /* スマホ */
     @media (max-width: 720px){
       .grid3{ grid-template-columns: 1fr; }
       .statusGrid{ grid-template-columns: 1fr; }
@@ -392,7 +390,7 @@
     </div>
   </div>
 
-  <!-- ✅ 追加：引いたカード確認（リビール） -->
+  <!-- 引いたカード確認（人間だけ） -->
   <div id="revealOverlay" class="lockOverlay hidden revealOverlay" aria-hidden="true">
     <div class="lockCard popIn">
       <div class="lockTitle">引いたカードを確認</div>
@@ -412,7 +410,7 @@
 
       <div class="note small" style="margin-top:10px;">
         <span class="tag">説明</span>
-        OKを押すまでペア処理＆ターン移動しません（確認してから次へ）。
+        OKを押すまでペア処理＆ターン移動しません（人間だけ確認）。
       </div>
     </div>
   </div>
@@ -422,23 +420,23 @@
     <header class="hero">
       <div class="logo">🂡</div>
       <div class="heroText">
-        <h1>🂡　ババ抜き　🂡</h1>
-        <p></p>
+        <h1>ババ抜き（GitHub Pages）</h1>
+        <p>静的HTML/JSだけで動作｜2〜5人｜CPU4段階｜PVP覗き見防止｜引くアクション同期＋人間確認</p>
       </div>
     </header>
 
     <section class="panel">
-      <h2>遊び方</h2>
+      <h2>遊び方（操作はこれだけ）</h2>
       <ol class="steps">
         <li>最初に同じ数字のペアは自動で捨てられます。</li>
         <li>手番の人は、次の人の<b>裏カード</b>を1枚タップして引きます。</li>
-        <li><b>引いたカードを確認</b> → そろった/そろってない を見てOKを押す。</li>
+        <li><b>人間の番だけ</b>「引いたカード確認」→ そろった/そろってない を見てOK。</li>
         <li>OK後にペアが自動で捨てられ、次の人の番になります。</li>
         <li>最後にカードを持っている人（ジョーカー持ち）が負け！</li>
       </ol>
       <div class="note small">
         <span class="tag">演出</span>
-        裏カードを押す → 「手伸ばし」＋「カード飛ぶ」＋「引いたカード確認（フリップ）」が出ます。
+        裏カードを押す → 「手伸ばし」＋「カード飛ぶ」＋「確認（フリップ）」。
       </div>
     </section>
 
@@ -585,7 +583,6 @@
   </div>
 
   <script>
-    // ========= util =========
     const $ = (id)=>document.getElementById(id);
     const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
     const shuffle = (a)=>{ for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
@@ -598,7 +595,6 @@
       setTimeout(()=>el.classList.remove(cls), ms);
     }
 
-    // ========= cards =========
     function makeDeck(){
       const suits = ["S","H","D","C"];
       const ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
@@ -614,7 +610,6 @@
     }
 
     function discardPairs(hand){
-      // remove pairs by rank (joker excluded)
       const count = new Map();
       for(const c of hand){
         if(c.rank==="Joker") continue;
@@ -640,10 +635,9 @@
         }
       }
       hand.length=0; hand.push(...newHand);
-      return removed; // removed cards count
+      return removed;
     }
 
-    // ========= game state =========
     let G = null;
 
     function newGame({players, mode, difficulty}){
@@ -748,11 +742,9 @@
         if(good.length) return good[(Math.random()*good.length)|0];
         return (Math.random()<0.9)?0:r();
       }
-      // NORMAL
-      return r();
+      return r(); // NORMAL
     }
 
-    // ========= animation helpers =========
     async function playDrawAnimation(fromEl, toEl){
       pulseClass($("ch-me"), "reach", 480);
       pulseClass($("ch-next"), "react", 320);
@@ -783,21 +775,20 @@
       await new Promise(res=>setTimeout(res, 500));
     }
 
-    // ✅ 追加：引いたカードの確認（OKを押すまで進行しない）
-    function showReveal(cardText, matched, onOk){
+    // 人間だけ：引いたカード確認（OKを押すまで進行しない）
+    function showRevealHuman(cardText, matched, onOk){
       if(!G || G.revealOpen) return;
       G.revealOpen = true;
 
       const ov = $("revealOverlay");
       const inner = $("revealInner");
 
-      // 表示内容
       $("revealCardText").textContent = cardText;
       $("revealResultText").innerHTML = matched
         ? `✅ <b>そろった！</b>（ペアができます）`
         : `❌ <b>そろってない</b>`;
 
-      // 表→裏の回転を毎回リセットしてから表示
+      // 毎回フリップをリセット
       ov.classList.add("hidden");
       ov.classList.remove("show");
       inner.style.transition = "none";
@@ -806,12 +797,10 @@
       inner.style.transition = "";
       inner.style.transform = "";
 
-      // オーバーレイ表示
       ov.classList.remove("hidden");
       ov.setAttribute("aria-hidden","false");
       ov.classList.add("show");
 
-      // OKボタン
       const btn = $("revealOkBtn");
       btn.onclick = null;
       btn.onclick = () => {
@@ -823,7 +812,6 @@
       };
     }
 
-    // ========= actions =========
     async function humanDraw(chosenIndex, clickedBtn){
       if(!G || G.busy || G.finished) return;
       if(G.mode==="PVP" && G.locked) return;
@@ -831,6 +819,7 @@
 
       const me = current();
       const target = nextPlayer();
+
       if(target.hand.length===0){
         G.message = "次の人が0枚なので自動で次へ。";
         advanceTurn(); normalizeTurn();
@@ -841,18 +830,16 @@
 
       G.busy = true;
 
-      // ① 演出
       const toEl = $("myHand");
       await playDrawAnimation(clickedBtn, toEl);
 
-      // ② 引く（ここでは捨てない）
       const idx = clamp(chosenIndex, 0, target.hand.length-1);
       const taken = target.hand.splice(idx, 1)[0];
       const matched = (taken.rank !== "Joker") && hasRank(me.hand, taken.rank);
       me.hand.push(taken);
 
-      // ③ 引いたカードを確認 → OK後に捨て＆次の番
-      showReveal(displayCard(taken), matched, () => {
+      // ✅ 人間だけ確認を出す
+      showRevealHuman(displayCard(taken), matched, () => {
         const removed = discardPairs(me.hand);
 
         G.message =
@@ -866,7 +853,6 @@
           normalizeTurn();
         }
 
-        // PVP：引いたらロックして端末を渡す
         if(G.mode==="PVP" && !G.finished){
           G.locked = true;
         }
@@ -886,41 +872,43 @@
       if(!G || G.busy || G.finished) return;
       if(!current().cpu) return;
 
-      G.busy=true;
+      G.busy = true;
       $("cpuPanel").style.display = "";
       $("cpuThinking").textContent = "CPUが考え中...";
 
-      await new Promise(r=>setTimeout(r, 700));
+      await new Promise(r => setTimeout(r, 700));
 
       const cpu = current();
       const target = nextPlayer();
-      if(target.hand.length===0){
+
+      if(target.hand.length === 0){
         G.message = `${cpu.name} は次の人が0枚なのでスキップ。`;
-        advanceTurn(); normalizeTurn();
-        G.busy=false;
+        advanceTurn();
+        normalizeTurn();
+        G.busy = false;
         renderAll();
         maybeAutoCpu();
         return;
       }
 
-      // 演出：裏カードっぽい要素から飛ばす
       const backs = $("opBacks").querySelector(".card.back");
       const toEl = $("myHand");
       await playDrawAnimation(backs || $("opBacks"), toEl);
 
       const pick = pickIndexByDifficulty(cpu.hand, target.hand);
-      const idx = clamp(pick, 0, target.hand.length-1);
+      const idx = clamp(pick, 0, target.hand.length - 1);
       const taken = target.hand.splice(idx, 1)[0];
+
       const matched = (taken.rank !== "Joker") && hasRank(cpu.hand, taken.rank);
       cpu.hand.push(taken);
 
-            // ✅ CPUは確認画面を出さず、そのままペア処理→次の番へ
+      // ✅ CPUは確認画面を出さず、そのまま処理して進む
       const removed = discardPairs(cpu.hand);
 
       G.message =
         `${cpu.name} が ${target.name} から1枚引いた。` +
         (matched ? "（そろった）" : "（そろってない）") +
-        (removed>0 ? ` ペアを${removed/2}組捨てた。` : "");
+        (removed > 0 ? ` ペアを${removed/2}組捨てた。` : "");
 
       checkFinish();
       if(!G.finished){
@@ -928,18 +916,18 @@
         normalizeTurn();
       }
 
-      G.busy=false;
+      G.busy = false;
       renderAll();
       maybeAutoCpu();
+    }
 
     function maybeAutoCpu(){
       if(!G || G.finished) return;
-      if(G.mode==="CPU" && current().cpu && !G.locked){
-        setTimeout(cpuStep, 50);
+      if(G.mode==="CPU" && current().cpu && !G.locked && !G.revealOpen){
+        setTimeout(cpuStep, 60);
       }
     }
 
-    // ========= render =========
     function showMenu(){
       $("viewMenu").classList.remove("hidden");
       $("viewGame").classList.add("hidden");
@@ -1011,11 +999,9 @@
         const b=document.createElement("div");
         b.className="card back";
         b.innerHTML=`<span class="backMark">🂠</span>`;
-        b.dataset.idx = String(i);
         b.addEventListener("click", (ev)=>{
           ev.preventDefault();
-          if(G.busy) return;
-          // 多重クリック防止
+          if(!G || G.busy || G.revealOpen) return;
           b.style.pointerEvents="none";
           setTimeout(()=>b.style.pointerEvents="", 900);
           humanDraw(i, b);
@@ -1062,7 +1048,6 @@
         .replaceAll("'","&#39;");
     }
 
-    // ========= menu events / persistence =========
     function loadSettings(){
       try{
         const raw = localStorage.getItem("babanuki_settings");
@@ -1119,7 +1104,6 @@
       showLock();
     });
 
-    // init
     loadSettings();
     showMenu();
   </script>
