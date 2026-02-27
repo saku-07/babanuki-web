@@ -914,33 +914,23 @@
       const matched = (taken.rank !== "Joker") && hasRank(cpu.hand, taken.rank);
       cpu.hand.push(taken);
 
-      // CPUも「確認」を出す（OKは自動で押す）
-      showReveal(displayCard(taken), matched, () => {
-        const removed = discardPairs(cpu.hand);
+            // ✅ CPUは確認画面を出さず、そのままペア処理→次の番へ
+      const removed = discardPairs(cpu.hand);
 
-        G.message =
-          `${cpu.name} が ${target.name} から1枚引いた。` +
-          (matched ? "（そろった）" : "（そろってない）") +
-          (removed>0 ? ` ペアを${removed/2}組捨てた。` : "");
+      G.message =
+        `${cpu.name} が ${target.name} から1枚引いた。` +
+        (matched ? "（そろった）" : "（そろってない）") +
+        (removed>0 ? ` ペアを${removed/2}組捨てた。` : "");
 
-        checkFinish();
-        if(!G.finished){
-          advanceTurn(); normalizeTurn();
-        }
+      checkFinish();
+      if(!G.finished){
+        advanceTurn();
+        normalizeTurn();
+      }
 
-        G.busy=false;
-        renderAll();
-        maybeAutoCpu();
-      });
-
-      // CPUの確認は 900ms で自動OK
-      setTimeout(() => {
-        if(G && G.revealOpen){
-          const btn = $("revealOkBtn");
-          btn && btn.click();
-        }
-      }, 900);
-    }
+      G.busy=false;
+      renderAll();
+      maybeAutoCpu();
 
     function maybeAutoCpu(){
       if(!G || G.finished) return;
