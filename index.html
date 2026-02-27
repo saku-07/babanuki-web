@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>ババ抜き</title>
+  <title>ババ抜き（GitHub Pages版）</title>
   <meta name="theme-color" content="#0b1220"/>
   <style>
     *{box-sizing:border-box}
@@ -282,32 +282,82 @@
 
     /* ===== 引くアクション：カードが飛ぶ ===== */
     .flyCard{
-      position:fixed;
-      left:-9999px; top:-9999px;
-      width:74px; height:102px;
-      border-radius:16px;
-      display:grid; place-items:center;
-      font-size:28px;
+      position: fixed;
+      left: -9999px;
+      top: -9999px;
+      width: 74px;
+      height: 102px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
       background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
       border: 1px solid rgba(255,255,255,.20);
       box-shadow: 0 14px 30px rgba(0,0,0,.35);
-      z-index:10000;
-      opacity:0;
-      pointer-events:none;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
       transform: translate3d(0,0,0) rotate(0deg) scale(1);
     }
     .flyCard.play{
-      opacity:1;
+      opacity: 1;
       animation: flyMove .45s cubic-bezier(.2,.9,.2,1) forwards;
     }
     @keyframes flyMove{
-      0%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+      0%{ transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
       60%{ transform: translate3d(calc(var(--dx) * .6), calc(var(--dy) * .6), 0) rotate(18deg) scale(1.06); }
       100%{ transform: translate3d(var(--dx), var(--dy), 0) rotate(8deg) scale(.96); opacity: 0; }
     }
 
     /* 画面切替 */
     .hidden{ display:none !important; }
+
+    /* ===== 追加：引いたカード確認（リビール）アニメ ===== */
+    .revealWrap{
+      margin-top:12px;
+      display:flex;
+      justify-content:center;
+    }
+    .revealCard3d{
+      width: 110px;
+      height: 150px;
+      perspective: 900px;
+    }
+    .revealCardInner{
+      width:100%; height:100%;
+      position:relative;
+      transform-style:preserve-3d;
+      transform: rotateY(180deg);
+      transition: transform .42s cubic-bezier(.2,.9,.2,1);
+      filter: drop-shadow(0 18px 26px rgba(0,0,0,.38));
+    }
+    .revealOverlay.show .revealCardInner{
+      transform: rotateY(0deg);
+    }
+    .revealFace{
+      position:absolute; inset:0;
+      backface-visibility:hidden;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.18);
+      display:grid;
+      place-items:center;
+    }
+    .revealBack{
+      transform: rotateY(180deg);
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      font-size: 34px;
+    }
+    .revealFront{
+      background: rgba(0,0,0,.22);
+      font-size: 22px;
+      font-weight: 900;
+      padding: 10px;
+      text-align:center;
+      line-height:1.2;
+    }
+
+    .popIn{ animation: popIn .22s ease-out; }
+    @keyframes popIn{ from{transform:translateY(8px) scale(.98); opacity:0} to{transform:translateY(0) scale(1); opacity:1} }
 
     /* スマホ */
     @media (max-width: 720px){
@@ -318,6 +368,8 @@
       .flyCard{ width:64px; height:92px; }
       .chAvatar{ width:84px; height:84px; }
       .heroText h1{ font-size:22px; }
+      .revealCard3d{ width: 100px; height: 140px; }
+      .revealFront{ font-size: 20px; }
     }
   </style>
 </head>
@@ -340,27 +392,53 @@
     </div>
   </div>
 
+  <!-- ✅ 追加：引いたカード確認（リビール） -->
+  <div id="revealOverlay" class="lockOverlay hidden revealOverlay" aria-hidden="true">
+    <div class="lockCard popIn">
+      <div class="lockTitle">引いたカードを確認</div>
+
+      <div class="revealWrap">
+        <div class="revealCard3d">
+          <div id="revealInner" class="revealCardInner" aria-hidden="true">
+            <div class="revealFace revealBack">🂠</div>
+            <div class="revealFace revealFront" id="revealCardText">♠A</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lockText" id="revealResultText" style="margin-top:12px;">---</div>
+
+      <button class="btn primary" id="revealOkBtn" type="button">OK（次の番へ）</button>
+
+      <div class="note small" style="margin-top:10px;">
+        <span class="tag">説明</span>
+        OKを押すまでペア処理＆ターン移動しません（確認してから次へ）。
+      </div>
+    </div>
+  </div>
+
   <!-- MENU -->
   <div id="viewMenu" class="wrap">
     <header class="hero">
       <div class="logo">🂡</div>
       <div class="heroText">
-        <h1></h1>
-        <p></p>
+        <h1>ババ抜き（GitHub Pages）</h1>
+        <p>静的HTML/JSだけで動作｜2〜5人｜CPU4段階｜PVP覗き見防止｜引くアクション同期＋確認</p>
       </div>
     </header>
 
     <section class="panel">
-      <h2>遊び方</h2>
+      <h2>遊び方（操作はこれだけ）</h2>
       <ol class="steps">
         <li>最初に同じ数字のペアは自動で捨てられます。</li>
         <li>手番の人は、次の人の<b>裏カード</b>を1枚タップして引きます。</li>
-        <li>引いたあとペアができたら自動で捨てます。</li>
+        <li><b>引いたカードを確認</b> → そろった/そろってない を見てOKを押す。</li>
+        <li>OK後にペアが自動で捨てられ、次の人の番になります。</li>
         <li>最後にカードを持っている人（ジョーカー持ち）が負け！</li>
       </ol>
       <div class="note small">
         <span class="tag">演出</span>
-        裏カードを押すと「手伸ばし」＋「カード飛ぶ」が同期します。
+        裏カードを押す → 「手伸ばし」＋「カード飛ぶ」＋「引いたカード確認（フリップ）」が出ます。
       </div>
     </section>
 
@@ -405,7 +483,7 @@
     </section>
 
     <footer class="panel">
-      <small style="color:var(--muted)">※ GitHub Pagesは「サーバーなし」なのでオンライン対戦・ランキングは未実装。</small>
+      <small style="color:var(--muted)">※ GitHub Pagesはサーバーなし（オンライン対戦・ランキングは未実装）。</small>
     </footer>
   </div>
 
@@ -425,7 +503,6 @@
     <section class="panel flashIn">
       <h2>メッセージ</h2>
       <div class="msg" id="msgBox">---</div>
-
       <div class="statusGrid" id="statusGrid"></div>
     </section>
 
@@ -475,7 +552,7 @@
 
       <div class="note small">
         <span class="tag">操作</span>
-        人間の番は、下の「裏カード」を1枚タップ。CPUの番は自動で進みます。
+        人間の番：裏カードを1枚タップ → 引いたカード確認 → OKで次の番へ。
       </div>
     </section>
 
@@ -594,7 +671,8 @@
         loserName: null,
         message: "最初のペアを捨てました。手番の人が引いてください。",
         locked: (mode==="PVP"),
-        busy: false
+        busy: false,
+        revealOpen: false
       };
 
       normalizeTurn();
@@ -616,7 +694,6 @@
     function nextPlayer(){ return G.players[nextIndex()]; }
 
     function normalizeTurn(){
-      // ensure current has cards; otherwise advance
       const n=G.players.length;
       for(let step=0; step<n; step++){
         if(current().hand.length>0) return;
@@ -676,14 +753,12 @@
     }
 
     // ========= animation helpers =========
-    function playDrawAnimation(fromEl, toEl){
-      // character sync
+    async function playDrawAnimation(fromEl, toEl){
       pulseClass($("ch-me"), "reach", 480);
       pulseClass($("ch-next"), "react", 320);
 
-      // fly card
       const fly = $("flyCard");
-      if(!fly || !fromEl || !toEl) return Promise.resolve();
+      if(!fly || !fromEl || !toEl) return;
 
       const fr = fromEl.getBoundingClientRect();
       const tr = toEl.getBoundingClientRect();
@@ -705,67 +780,116 @@
       void fly.offsetWidth;
       fly.classList.add("play");
 
-      return new Promise(res=>setTimeout(res, 500));
+      await new Promise(res=>setTimeout(res, 500));
+    }
+
+    // ✅ 追加：引いたカードの確認（OKを押すまで進行しない）
+    function showReveal(cardText, matched, onOk){
+      if(!G || G.revealOpen) return;
+      G.revealOpen = true;
+
+      const ov = $("revealOverlay");
+      const inner = $("revealInner");
+
+      // 表示内容
+      $("revealCardText").textContent = cardText;
+      $("revealResultText").innerHTML = matched
+        ? `✅ <b>そろった！</b>（ペアができます）`
+        : `❌ <b>そろってない</b>`;
+
+      // 表→裏の回転を毎回リセットしてから表示
+      ov.classList.add("hidden");
+      ov.classList.remove("show");
+      inner.style.transition = "none";
+      inner.style.transform = "rotateY(180deg)";
+      void inner.offsetWidth;
+      inner.style.transition = "";
+      inner.style.transform = "";
+
+      // オーバーレイ表示
+      ov.classList.remove("hidden");
+      ov.setAttribute("aria-hidden","false");
+      ov.classList.add("show");
+
+      // OKボタン
+      const btn = $("revealOkBtn");
+      btn.onclick = null;
+      btn.onclick = () => {
+        ov.classList.add("hidden");
+        ov.setAttribute("aria-hidden","true");
+        ov.classList.remove("show");
+        G.revealOpen = false;
+        onOk();
+      };
     }
 
     // ========= actions =========
     async function humanDraw(chosenIndex, clickedBtn){
-      if(G.busy || G.finished) return;
+      if(!G || G.busy || G.finished) return;
       if(G.mode==="PVP" && G.locked) return;
       if(current().cpu) return;
 
+      const me = current();
       const target = nextPlayer();
       if(target.hand.length===0){
         G.message = "次の人が0枚なので自動で次へ。";
-        advanceTurn();
-        normalizeTurn();
+        advanceTurn(); normalizeTurn();
         renderAll();
         maybeAutoCpu();
         return;
       }
 
-      G.busy=true;
+      G.busy = true;
 
-      // animation sync: from clicked back card -> my hand area
+      // ① 演出
       const toEl = $("myHand");
       await playDrawAnimation(clickedBtn, toEl);
 
+      // ② 引く（ここでは捨てない）
       const idx = clamp(chosenIndex, 0, target.hand.length-1);
-      const taken = target.hand.splice(idx,1)[0];
-      current().hand.push(taken);
+      const taken = target.hand.splice(idx, 1)[0];
+      const matched = (taken.rank !== "Joker") && hasRank(me.hand, taken.rank);
+      me.hand.push(taken);
 
-      const removed = discardPairs(current().hand);
-      G.message = `${current().name} が ${target.name} から1枚引いた！` + (removed>0?` ペアを${removed/2}組捨てた！`:"");
+      // ③ 引いたカードを確認 → OK後に捨て＆次の番
+      showReveal(displayCard(taken), matched, () => {
+        const removed = discardPairs(me.hand);
 
-      checkFinish();
-      if(!G.finished){
-        advanceTurn();
-        normalizeTurn();
-      }
+        G.message =
+          `${me.name} が ${target.name} から1枚引いた！` +
+          (matched ? "（そろった！）" : "（そろってない）") +
+          (removed>0 ? ` ペアを${removed/2}組捨てた！` : "");
 
-      // PVP auto lock after action
-      if(G.mode==="PVP" && !G.finished){
-        G.locked = true;
-      }
+        checkFinish();
+        if(!G.finished){
+          advanceTurn();
+          normalizeTurn();
+        }
 
-      G.busy=false;
-      renderAll();
+        // PVP：引いたらロックして端末を渡す
+        if(G.mode==="PVP" && !G.finished){
+          G.locked = true;
+        }
 
-      if(G.mode==="PVP" && G.locked && !G.finished){
-        showLock();
-      }
-      maybeAutoCpu();
+        G.busy = false;
+        renderAll();
+
+        if(G.mode==="PVP" && G.locked && !G.finished){
+          showLock();
+        }
+
+        maybeAutoCpu();
+      });
     }
 
     async function cpuStep(){
-      if(G.busy || G.finished) return;
+      if(!G || G.busy || G.finished) return;
       if(!current().cpu) return;
 
       G.busy=true;
       $("cpuPanel").style.display = "";
       $("cpuThinking").textContent = "CPUが考え中...";
 
-      // small wait for "thinking"
       await new Promise(r=>setTimeout(r, 700));
 
       const cpu = current();
@@ -779,33 +903,48 @@
         return;
       }
 
-      // animation: use first back card element if exists
+      // 演出：裏カードっぽい要素から飛ばす
       const backs = $("opBacks").querySelector(".card.back");
       const toEl = $("myHand");
-      // in CPU turn, myHand represents current's hand area too (we render current)
       await playDrawAnimation(backs || $("opBacks"), toEl);
 
       const pick = pickIndexByDifficulty(cpu.hand, target.hand);
-      const taken = target.hand.splice(clamp(pick,0,target.hand.length-1),1)[0];
+      const idx = clamp(pick, 0, target.hand.length-1);
+      const taken = target.hand.splice(idx, 1)[0];
+      const matched = (taken.rank !== "Joker") && hasRank(cpu.hand, taken.rank);
       cpu.hand.push(taken);
 
-      const removed = discardPairs(cpu.hand);
-      G.message = `${cpu.name} が ${target.name} から1枚引いた。` + (removed>0?` ペアを${removed/2}組捨てた。`:"");
+      // CPUも「確認」を出す（OKは自動で押す）
+      showReveal(displayCard(taken), matched, () => {
+        const removed = discardPairs(cpu.hand);
 
-      checkFinish();
-      if(!G.finished){
-        advanceTurn(); normalizeTurn();
-      }
+        G.message =
+          `${cpu.name} が ${target.name} から1枚引いた。` +
+          (matched ? "（そろった）" : "（そろってない）") +
+          (removed>0 ? ` ペアを${removed/2}組捨てた。` : "");
 
-      G.busy=false;
-      renderAll();
-      maybeAutoCpu();
+        checkFinish();
+        if(!G.finished){
+          advanceTurn(); normalizeTurn();
+        }
+
+        G.busy=false;
+        renderAll();
+        maybeAutoCpu();
+      });
+
+      // CPUの確認は 900ms で自動OK
+      setTimeout(() => {
+        if(G && G.revealOpen){
+          const btn = $("revealOkBtn");
+          btn && btn.click();
+        }
+      }, 900);
     }
 
     function maybeAutoCpu(){
       if(!G || G.finished) return;
-      if(G.mode==="CPU" && current().cpu){
-        // auto chain CPU turns
+      if(G.mode==="CPU" && current().cpu && !G.locked){
         setTimeout(cpuStep, 50);
       }
     }
@@ -822,7 +961,7 @@
     }
 
     function showLock(){
-      $("lockText").innerHTML = `手番：<b>${current().name}</b><br>準備できたら「解除」を押してね。`;
+      $("lockText").innerHTML = `手番：<b>${escapeHtml(current().name)}</b><br>準備できたら「解除」を押してね。`;
       $("lockOverlay").classList.remove("hidden");
       $("lockOverlay").setAttribute("aria-hidden","false");
     }
@@ -835,7 +974,6 @@
       const grid = $("statusGrid");
       grid.innerHTML="";
       const n=G.players.length;
-      // 3列前提だけどスマホで1列になるCSSなのでOK
       for(let i=0;i<n;i++){
         const p=G.players[i];
         const div=document.createElement("div");
@@ -849,16 +987,12 @@
     }
 
     function renderCharacters(){
-      // UI上の「ch-me」は current、「ch-next」は next
       $("meName").textContent = current().name;
       $("nextName").textContent = nextPlayer().name;
-
       $("meState").textContent = current().cpu ? "CPU（自動）" : "人間（操作）";
       $("nextState").textContent = "次に引く相手";
-
-      // idle維持
-      if(!$("ch-me").classList.contains("idle")) $("ch-me").classList.add("idle");
-      if(!$("ch-next").classList.contains("idle")) $("ch-next").classList.add("idle");
+      $("ch-me").classList.add("idle");
+      $("ch-next").classList.add("idle");
     }
 
     function renderHumanArea(){
@@ -871,7 +1005,6 @@
       $("handTitle").textContent = `${current().name} の手札（見える）`;
       $("targetNameInline").textContent = nextPlayer().name;
 
-      // current hand
       const myHand=$("myHand");
       myHand.innerHTML="";
       for(const c of current().hand){
@@ -881,7 +1014,6 @@
         myHand.appendChild(d);
       }
 
-      // opponent backs (as clickable buttons only on human turn)
       const backs=$("opBacks");
       backs.innerHTML="";
       const t = nextPlayer();
@@ -892,9 +1024,10 @@
         b.dataset.idx = String(i);
         b.addEventListener("click", (ev)=>{
           ev.preventDefault();
-          // multi-click prevention: disable pointer quickly
+          if(G.busy) return;
+          // 多重クリック防止
           b.style.pointerEvents="none";
-          setTimeout(()=>b.style.pointerEvents="", 800);
+          setTimeout(()=>b.style.pointerEvents="", 900);
           humanDraw(i, b);
         });
         backs.appendChild(b);
@@ -913,7 +1046,6 @@
     function renderAll(){
       if(!G) return;
       showGame();
-
       $("subTitle").textContent = `モード：${G.mode} / 強さ：${G.difficulty}`;
       $("msgBox").textContent = G.message;
 
@@ -922,10 +1054,8 @@
       renderResult();
       renderHumanArea();
 
-      // lock button visibility
       $("lockNowBtn").style.display = (G.mode==="PVP" && !G.finished) ? "" : "none";
 
-      // if locked show overlay
       if(G.mode==="PVP" && G.locked && !G.finished){
         showLock();
       }else{
@@ -977,7 +1107,6 @@
     });
 
     $("restartBtn").addEventListener("click", ()=>{
-      // restart with same settings
       const last = JSON.parse(localStorage.getItem("babanuki_settings")||"{}");
       newGame({
         players: Number(last.players||4),
