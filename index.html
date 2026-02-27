@@ -1,1008 +1,224 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>ババ抜き（GitHub Pages版）</title>
-  <meta name="theme-color" content="#0b1220"/>
-  <style>
-    *{box-sizing:border-box}
-    :root{
-      --bg:#0b1220;
-      --panel:rgba(255,255,255,.08);
-      --text:#e8eefc;
-      --muted:rgba(232,238,252,.74);
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --radius:18px;
-      --a: rgba(88,153,255,.9);
-      --b: rgba(142,92,255,.9);
-    }
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
-      color:var(--text);
-      background: radial-gradient(1200px 700px at 20% 10%, #1b2b55, var(--bg));
-      overflow-x:hidden;
-    }
-    .bgAnim{
-      position:fixed; inset:0; pointer-events:none;
-      background:
-        radial-gradient(400px 300px at 80% 20%, rgba(255,255,255,.08), transparent 60%),
-        radial-gradient(600px 400px at 30% 70%, rgba(255,255,255,.06), transparent 60%);
-      animation: drift 10s ease-in-out infinite alternate;
-    }
-    @keyframes drift{ from{transform:translate3d(0,0,0)} to{transform:translate3d(10px,-12px,0)} }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ババ抜き Ultimate</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#0f172a;
+  color:white;
+}
+.wrap{max-width:900px;margin:auto;padding:15px}
+.hidden{display:none}
+.panel{
+  background:rgba(255,255,255,0.08);
+  padding:15px;
+  border-radius:16px;
+  margin-top:12px;
+}
+.btn{
+  padding:10px 14px;
+  border-radius:12px;
+  border:none;
+  cursor:pointer;
+  background:#2563eb;
+  color:white;
+}
+.card{
+  width:70px;height:100px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:white;
+  color:black;
+  font-weight:bold;
+}
+.back{background:#334155;color:white;cursor:pointer}
+.hand{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 
-    .wrap{ max-width:980px; margin:0 auto; padding:14px; }
-    .hero{
-      display:flex; gap:14px; align-items:center;
-      padding:18px;
-      border-radius:var(--radius);
-      background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
-      box-shadow:var(--shadow);
-    }
-    .logo{
-      width:52px; height:52px; display:grid; place-items:center;
-      font-size:30px;
-      background: rgba(255,255,255,.12);
-      border-radius:16px;
-      user-select:none;
-    }
-    .heroText h1{ margin:0; font-size:26px; }
-    .heroText p{ margin:4px 0 0; color:var(--muted); font-size:13px; }
-
-    .panel{
-      margin-top:14px;
-      padding:16px;
-      border-radius:var(--radius);
-      background:var(--panel);
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(8px);
-    }
-    .panel h2{ margin:0 0 10px; font-size:18px; }
-    .panel h3{ margin:14px 0 8px; font-size:16px; }
-
-    .steps{ margin:0; padding-left:18px; color:var(--muted); }
-    .steps li{ margin:8px 0; }
-
-    .grid3{ display:grid; grid-template-columns: repeat(3,1fr); gap:10px; }
-    .field span{ display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
-
-    select, input[type="text"]{
-      width:100%;
-      padding:12px;
-      border-radius:14px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.25);
-      color: var(--text);
-      outline:none;
-    }
-
-    .btn{
-      border:0;
-      border-radius:14px;
-      padding:12px 14px;
-      cursor:pointer;
-      font-size:14px;
-      color:var(--text);
-      background: rgba(255,255,255,.12);
-      transition: transform .08s ease, filter .2s ease;
-      user-select:none;
-    }
-    .btn:active{ transform: translateY(1px) scale(.99); }
-    .btn.primary{
-      width:100%;
-      margin-top:12px;
-      background: linear-gradient(135deg, var(--a), var(--b));
-      box-shadow: 0 12px 30px rgba(88,153,255,.25);
-    }
-    .btn.ghost{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-    }
-
-    .note{
-      margin-top:12px;
-      padding:10px 12px;
-      border-radius:14px;
-      background: rgba(255,255,255,.06);
-      color:var(--muted);
-      display:flex; gap:10px; align-items:flex-start;
-    }
-    .note.small{ font-size:12px; }
-    .tag{
-      flex:0 0 auto;
-      font-size:12px;
-      padding:4px 8px;
-      border-radius:999px;
-      background: rgba(255,255,255,.12);
-      color: var(--text);
-    }
-
-    .topbar{
-      display:flex; justify-content:space-between; align-items:center;
-      gap:10px;
-      padding:14px 16px;
-      border-radius:var(--radius);
-      background: rgba(255,255,255,.08);
-      box-shadow:var(--shadow);
-      margin-top:10px;
-    }
-    .title .mini{ font-weight:800; }
-    .title .sub{ font-size:12px; color:var(--muted); margin-top:2px; }
-
-    .msg{
-      padding:10px 12px;
-      border-radius:14px;
-      background: rgba(0,0,0,.22);
-      border: 1px solid rgba(255,255,255,.10);
-      line-height:1.6;
-    }
-
-    .statusGrid{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:10px;
-      margin-top:10px;
-    }
-    .pStat{
-      padding:10px 12px;
-      border-radius:14px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-    }
-    .pName{ font-weight:800; }
-    .pMeta{ color:var(--muted); margin-top:4px; font-size:13px; }
-
-    .hand{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:10px;
-    }
-
-    .card{
-      width:74px;
-      height:102px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow: 0 10px 24px rgba(0,0,0,.24);
-      user-select:none;
-      transition: transform .12s ease, filter .2s ease;
-    }
-    .card:hover{ filter: brightness(1.06); }
-    .card:active{ transform: translateY(1px) scale(.99); }
-    .faceUp .rank{ font-weight:900; padding: 0 8px; text-align:center; }
-
-    .back{
-      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
-      cursor:pointer;
-    }
-    .backMark{ font-size:28px; opacity:.95; }
-
-    .hintBox{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:14px;
-      background: rgba(88,153,255,.12);
-      border: 1px solid rgba(88,153,255,.22);
-      display:flex; gap:10px;
-    }
-
-    .bigLose{
-      font-size:18px;
-      padding:12px 14px;
-      border-radius:14px;
-      background: rgba(255,255,255,.08);
-      line-height:1.6;
-    }
-
-    .flashIn{ animation: flashIn .25s ease-out; }
-    @keyframes flashIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
-
-    .cpuThinking{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:14px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: var(--muted);
-    }
-
-    /* ===== PVPロック（覗き見防止） ===== */
-    .lockOverlay{
-      position:fixed;
-      inset:0;
-      z-index:9999;
-      display:grid;
-      place-items:center;
-      padding:14px;
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(8px);
-    }
-    .lockCard{
-      width: min(520px, 100%);
-      border-radius:var(--radius);
-      padding:16px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow: var(--shadow);
-      text-align:center;
-    }
-    .lockTitle{ font-size:20px; font-weight:900; }
-    .lockText{ margin-top:10px; color:var(--muted); line-height:1.6; }
-
-    /* ===== キャラ（手伸ばし同期） ===== */
-    .arena{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-      margin-top:12px;
-    }
-    .character{
-      border-radius:var(--radius);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      padding:12px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      min-height:120px;
-      overflow:hidden;
-    }
-    .chMeta{ flex:1; }
-    .chName{ font-weight:900; }
-    .chState{ margin-top:4px; color:var(--muted); font-size:12px; }
-
-    .chAvatar{
-      width:92px; height:92px; flex:0 0 auto;
-      filter: drop-shadow(0 12px 18px rgba(0,0,0,.35));
-    }
-    .character.idle .chAvatar{ animation: breathe 1.8s ease-in-out infinite; }
-    @keyframes breathe{ 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-2px) scale(1.01)} }
-
-    .character .arm{ transform-origin: 20px 58px; }
-    .character.reach .arm{
-      animation: reachArm .45s cubic-bezier(.2,.9,.2,1) 1;
-    }
-    @keyframes reachArm{
-      0%{ transform: rotate(0deg) translateX(0); }
-      55%{ transform: rotate(-22deg) translateX(8px); }
-      100%{ transform: rotate(-8deg) translateX(3px); }
-    }
-    .character.react{ animation: reactHit .30s ease-out 1; }
-    @keyframes reactHit{
-      0%{ transform: translateX(0); }
-      40%{ transform: translateX(-4px); }
-      100%{ transform: translateX(0); }
-    }
-
-    /* ===== 引くアクション：カードが飛ぶ ===== */
-    .flyCard{
-      position:fixed;
-      left:-9999px; top:-9999px;
-      width:74px; height:102px;
-      border-radius:16px;
-      display:grid; place-items:center;
-      font-size:28px;
-      background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
-      border: 1px solid rgba(255,255,255,.20);
-      box-shadow: 0 14px 30px rgba(0,0,0,.35);
-      z-index:10000;
-      opacity:0;
-      pointer-events:none;
-      transform: translate3d(0,0,0) rotate(0deg) scale(1);
-    }
-    .flyCard.play{
-      opacity:1;
-      animation: flyMove .45s cubic-bezier(.2,.9,.2,1) forwards;
-    }
-    @keyframes flyMove{
-      0%{ transform: translate3d(0,0,0) rotate(0deg) scale(1); }
-      60%{ transform: translate3d(calc(var(--dx) * .6), calc(var(--dy) * .6), 0) rotate(18deg) scale(1.06); }
-      100%{ transform: translate3d(var(--dx), var(--dy), 0) rotate(8deg) scale(.96); opacity: 0; }
-    }
-
-    /* 画面切替 */
-    .hidden{ display:none !important; }
-
-    /* スマホ */
-    @media (max-width: 720px){
-      .grid3{ grid-template-columns: 1fr; }
-      .statusGrid{ grid-template-columns: 1fr; }
-      .arena{ grid-template-columns: 1fr; }
-      .card{ width:64px; height:92px; }
-      .flyCard{ width:64px; height:92px; }
-      .chAvatar{ width:84px; height:84px; }
-      .heroText h1{ font-size:22px; }
-    }
-  </style>
+/* オーバーレイ */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.overlayBox{
+  background:#1e293b;
+  padding:20px;
+  border-radius:16px;
+  text-align:center;
+}
+</style>
 </head>
 <body>
-  <div class="bgAnim"></div>
 
-  <!-- 飛ぶカード -->
-  <div id="flyCard" class="flyCard" aria-hidden="true">🂠</div>
+<div id="menu" class="wrap">
+  <h1>ババ抜き</h1>
+  <label>人数:
+    <select id="players">
+      <option>2</option>
+      <option>3</option>
+      <option selected>4</option>
+      <option>5</option>
+    </select>
+  </label>
+  <br><br>
+  <button class="btn" onclick="startGame()">ゲーム開始</button>
+</div>
 
-  <!-- PVPロック -->
-  <div id="lockOverlay" class="lockOverlay hidden" aria-hidden="true">
-    <div class="lockCard flashIn">
-      <div class="lockTitle">次の人に渡してね</div>
-      <div class="lockText" id="lockText">手番：---</div>
-      <button class="btn primary" id="unlockBtn" type="button">👀 解除（見る）</button>
-      <div class="note small" style="margin-top:10px;">
-        <span class="tag">PVP</span>
-        引いたら自動で再ロックされます。
-      </div>
-    </div>
+<div id="game" class="wrap hidden">
+  <div class="panel">
+    <div id="message"></div>
   </div>
 
-  <!-- MENU -->
-  <div id="viewMenu" class="wrap">
-    <header class="hero">
-      <div class="logo">🂡</div>
-      <div class="heroText">
-        <h1>ババ抜き（GitHub Pages）</h1>
-        <p>静的HTML/JSだけで動作｜2〜5人｜CPU4段階｜PVP覗き見防止｜引くアクション同期</p>
-      </div>
-    </header>
-
-    <section class="panel">
-      <h2>遊び方（操作はこれだけ）</h2>
-      <ol class="steps">
-        <li>最初に同じ数字のペアは自動で捨てられます。</li>
-        <li>手番の人は、次の人の<b>裏カード</b>を1枚タップして引きます。</li>
-        <li>引いたあとペアができたら自動で捨てます。</li>
-        <li>最後にカードを持っている人（ジョーカー持ち）が負け！</li>
-      </ol>
-      <div class="note small">
-        <span class="tag">演出</span>
-        裏カードを押すと「手伸ばし」＋「カード飛ぶ」が同期します。
-      </div>
-    </section>
-
-    <section class="panel">
-      <h2>設定</h2>
-      <div class="grid3">
-        <label class="field">
-          <span>人数（2〜5）</span>
-          <select id="playersSel">
-            <option value="2">2人</option>
-            <option value="3">3人</option>
-            <option value="4" selected>4人</option>
-            <option value="5">5人</option>
-          </select>
-        </label>
-
-        <label class="field">
-          <span>モード</span>
-          <select id="modeSel">
-            <option value="CPU" selected>CP対戦</option>
-            <option value="PVP">対人戦（同じ端末で交代）</option>
-          </select>
-        </label>
-
-        <label class="field">
-          <span>CP強さ</span>
-          <select id="diffSel">
-            <option value="EASY">弱（ランダム）</option>
-            <option value="NORMAL" selected>中（基本）</option>
-            <option value="HARD">強（ペア狙い）</option>
-            <option value="ONI">鬼（チート級）</option>
-          </select>
-        </label>
-      </div>
-
-      <button class="btn primary" id="startBtn" type="button">▶ ゲーム開始</button>
-
-      <div class="note small">
-        <span class="tag">保存</span>
-        設定はこの端末のブラウザに保存されます（localStorage）。
-      </div>
-    </section>
-
-    <footer class="panel">
-      <small style="color:var(--muted)">※ GitHub Pagesは「サーバーなし」なのでオンライン対戦・ランキングは未実装。</small>
-    </footer>
+  <div class="panel">
+    <h3 id="turnTitle"></h3>
+    <div class="hand" id="myHand"></div>
   </div>
 
-  <!-- GAME -->
-  <div id="viewGame" class="wrap hidden">
-    <header class="topbar">
-      <div class="title">
-        <div class="mini">🂡 ババ抜き</div>
-        <div class="sub" id="subTitle">モード：- / 強さ：-</div>
-      </div>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button class="btn ghost" id="lockNowBtn" type="button">🔒 いまロック</button>
-        <button class="btn ghost" id="menuBtn" type="button">メニューへ</button>
-      </div>
-    </header>
-
-    <section class="panel flashIn">
-      <h2>メッセージ</h2>
-      <div class="msg" id="msgBox">---</div>
-
-      <div class="statusGrid" id="statusGrid"></div>
-    </section>
-
-    <section class="panel flashIn">
-      <h2>アクション</h2>
-      <div class="arena">
-        <div class="character idle" id="ch-me">
-          <svg class="chAvatar" viewBox="0 0 100 100" aria-label="現在の手番">
-            <circle cx="50" cy="38" r="22" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.25)" />
-            <path d="M25 92c4-22 16-32 25-32s21 10 25 32"
-                  fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.22)"/>
-            <circle class="eye" cx="42" cy="35" r="3.2" fill="rgba(232,238,252,.92)"/>
-            <circle class="eye" cx="58" cy="35" r="3.2" fill="rgba(232,238,252,.92)"/>
-            <path class="mouth" d="M42 46 Q50 52 58 46"
-                  fill="none" stroke="rgba(232,238,252,.92)" stroke-width="2.4" stroke-linecap="round"/>
-            <g class="arm">
-              <path d="M28 60 Q40 54 52 58" fill="none" stroke="rgba(232,238,252,.90)" stroke-width="5" stroke-linecap="round"/>
-              <circle cx="52" cy="58" r="3.6" fill="rgba(232,238,252,.90)"/>
-            </g>
-          </svg>
-          <div class="chMeta">
-            <div class="chName" id="meName">手番</div>
-            <div class="chState" id="meState">待機</div>
-          </div>
-        </div>
-
-        <div class="character idle" id="ch-next">
-          <svg class="chAvatar" viewBox="0 0 100 100" aria-label="次の人">
-            <circle cx="50" cy="38" r="22" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.22)" />
-            <path d="M25 92c4-22 16-32 25-32s21 10 25 32"
-                  fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.20)"/>
-            <circle class="eye" cx="42" cy="35" r="3.2" fill="rgba(232,238,252,.88)"/>
-            <circle class="eye" cx="58" cy="35" r="3.2" fill="rgba(232,238,252,.88)"/>
-            <path class="mouth" d="M42 47 Q50 44 58 47"
-                  fill="none" stroke="rgba(232,238,252,.88)" stroke-width="2.4" stroke-linecap="round"/>
-            <g class="arm">
-              <path d="M72 60 Q60 54 48 58" fill="none" stroke="rgba(232,238,252,.80)" stroke-width="5" stroke-linecap="round"/>
-              <circle cx="48" cy="58" r="3.6" fill="rgba(232,238,252,.80)"/>
-            </g>
-          </svg>
-          <div class="chMeta">
-            <div class="chName" id="nextName">次の人</div>
-            <div class="chState" id="nextState">待機</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="note small">
-        <span class="tag">操作</span>
-        人間の番は、下の「裏カード」を1枚タップ。CPUの番は自動で進みます。
-      </div>
-    </section>
-
-    <section class="panel flashIn" id="resultPanel" style="display:none;">
-      <h2>結果</h2>
-      <div class="bigLose" id="resultText">---</div>
-      <button class="btn primary" id="restartBtn" type="button">もう一回</button>
-    </section>
-
-    <section class="panel flashIn" id="cpuPanel" style="display:none;">
-      <h2>CPUの番</h2>
-      <div class="cpuThinking" id="cpuThinking">CPUが考え中...</div>
-    </section>
-
-    <section class="panel flashIn" id="humanPanel" style="display:none;">
-      <h2 id="handTitle">手札</h2>
-
-      <div class="hand" id="myHand"></div>
-
-      <div class="hintBox">
-        <div class="tag">やること</div>
-        <div>
-          次の人「<b id="targetNameInline">相手</b>」の裏カードを<b>1枚タップ</b>して引いてね。
-        </div>
-      </div>
-
-      <h2>次の人のカード（裏）</h2>
-      <div class="hand" id="opBacks"></div>
-    </section>
+  <div class="panel">
+    <h3>次の人のカード</h3>
+    <div class="hand" id="targetHand"></div>
   </div>
 
-  <script>
-    // ========= util =========
-    const $ = (id)=>document.getElementById(id);
-    const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
-    const shuffle = (a)=>{ for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  <button class="btn" onclick="goMenu()">メニューへ</button>
+</div>
 
-    function pulseClass(el, cls, ms){
-      if(!el) return;
-      el.classList.remove(cls);
-      void el.offsetWidth;
-      el.classList.add(cls);
-      setTimeout(()=>el.classList.remove(cls), ms);
+<!-- 引いたカード表示 -->
+<div id="reveal" class="overlay hidden">
+  <div class="overlayBox">
+    <h2>引いたカード</h2>
+    <div id="revealCard" class="card" style="margin:auto"></div>
+    <p id="revealResult"></p>
+    <button class="btn" onclick="finishReveal()">OK</button>
+  </div>
+</div>
+
+<script>
+let game=null;
+
+function startGame(){
+  const count=parseInt(document.getElementById("players").value);
+  const deck=makeDeck();
+  const players=[];
+  for(let i=0;i<count;i++){
+    players.push({name:"プレイヤー"+(i+1),hand:[]});
+  }
+  let idx=0;
+  while(deck.length){
+    players[idx].hand.push(deck.pop());
+    idx=(idx+1)%players.length;
+  }
+  players.forEach(p=>discardPairs(p.hand));
+  game={players,turn:0,finished:false};
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  render();
+}
+
+function goMenu(){
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
+}
+
+function makeDeck(){
+  const suits=["♠","♥","♦","♣"];
+  const ranks=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+  const deck=[];
+  for(const s of suits)for(const r of ranks)deck.push({s,r});
+  deck.push({s:"",r:"Joker"});
+  return deck.sort(()=>Math.random()-0.5);
+}
+
+function discardPairs(hand){
+  const count={};
+  hand.forEach(c=>{
+    if(c.r!=="Joker"){
+      count[c.r]=(count[c.r]||0)+1;
     }
-
-    // ========= cards =========
-    function makeDeck(){
-      const suits = ["S","H","D","C"];
-      const ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
-      const deck=[];
-      for(const s of suits) for(const r of ranks) deck.push({suit:s, rank:r});
-      deck.push({suit:"J", rank:"Joker"});
-      return shuffle(deck);
-    }
-    function displayCard(c){
-      if(c.rank==="Joker") return "🃏JOKER";
-      const s = (c.suit==="S"?"♠":c.suit==="H"?"♥":c.suit==="D"?"♦":c.suit==="C"?"♣":c.suit);
-      return s + c.rank;
-    }
-
-    function discardPairs(hand){
-      // remove pairs by rank (joker excluded)
-      const count = new Map();
-      for(const c of hand){
-        if(c.rank==="Joker") continue;
-        count.set(c.rank,(count.get(c.rank)||0)+1);
-      }
-      const remove = new Map();
-      for(const [rank,n] of count.entries()){
-        const pairs = Math.floor(n/2);
-        if(pairs>0) remove.set(rank, pairs*2);
-      }
-      if(remove.size===0) return 0;
-
-      const newHand=[];
+  });
+  for(const r in count){
+    if(count[r]>=2){
       let removed=0;
-      for(const c of hand){
-        if(c.rank==="Joker"){ newHand.push(c); continue; }
-        const left = remove.get(c.rank)||0;
-        if(left>0){
-          remove.set(c.rank, left-1);
+      for(let i=hand.length-1;i>=0;i--){
+        if(hand[i].r===r && removed<2){
+          hand.splice(i,1);
           removed++;
-        }else{
-          newHand.push(c);
         }
       }
-      hand.length=0; hand.push(...newHand);
-      return removed; // removed cards count
     }
+  }
+}
+
+function render(){
+  const current=game.players[game.turn];
+  const next=game.players[(game.turn+1)%game.players.length];
+
+  document.getElementById("turnTitle").innerText=
+    current.name+" の手番";
+
+  const myHand=document.getElementById("myHand");
+  myHand.innerHTML="";
+  current.hand.forEach(c=>{
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerText=c.r==="Joker"?"🃏":c.s+c.r;
+    myHand.appendChild(div);
+  });
+
+  const targetHand=document.getElementById("targetHand");
+  targetHand.innerHTML="";
+  next.hand.forEach((c,i)=>{
+    const div=document.createElement("div");
+    div.className="card back";
+    div.innerText="🂠";
+    div.onclick=()=>drawCard(i);
+    targetHand.appendChild(div);
+  });
+}
+
+let pendingCard=null;
+
+function drawCard(index){
+  const current=game.players[game.turn];
+  const next=game.players[(game.turn+1)%game.players.length];
+  const card=next.hand.splice(index,1)[0];
+  current.hand.push(card);
+  pendingCard=card;
+
+  const matched=current.hand.filter(c=>c.r===card.r && c.r!=="Joker").length>=2;
+
+  document.getElementById("revealCard").innerText=
+    card.r==="Joker"?"🃏":card.s+card.r;
+
+  document.getElementById("revealResult").innerText=
+    matched?"そろった！":"そろってない";
+
+  document.getElementById("reveal").classList.remove("hidden");
+}
+
+function finishReveal(){
+  const current=game.players[game.turn];
+  discardPairs(current.hand);
+
+  if(current.hand.length===0){
+    alert(current.name+" あがり！");
+  }
+
+  game.turn=(game.turn+1)%game.players.length;
+
+  document.getElementById("reveal").classList.add("hidden");
+  render();
+}
+</script>
 
-    // ========= game state =========
-    let G = null;
-
-    function newGame({players, mode, difficulty}){
-      const ps=[];
-      ps.push({name:"あなた", cpu:false, hand:[]});
-      for(let i=2;i<=players;i++){
-        const cpu = (mode==="CPU");
-        ps.push({name: cpu?`CPU ${i-1}`:`プレイヤー ${i}`, cpu, hand:[]});
-      }
-
-      const deck = makeDeck();
-      let idx=0;
-      while(deck.length){
-        ps[idx].hand.push(deck.pop());
-        idx=(idx+1)%ps.length;
-      }
-      for(const p of ps) discardPairs(p.hand);
-
-      G = {
-        mode,
-        difficulty,
-        players: ps,
-        turnIndex: 0,
-        finished: false,
-        loserName: null,
-        message: "最初のペアを捨てました。手番の人が引いてください。",
-        locked: (mode==="PVP"),
-        busy: false
-      };
-
-      normalizeTurn();
-      checkFinish();
-      renderAll();
-      if(G.mode==="PVP" && G.locked) showLock();
-      maybeAutoCpu();
-    }
-
-    function current(){ return G.players[G.turnIndex]; }
-    function nextIndex(){
-      const n=G.players.length;
-      for(let step=1; step<=n; step++){
-        const i=(G.turnIndex+step)%n;
-        if(G.players[i].hand.length>0) return i;
-      }
-      return (G.turnIndex+1)%n;
-    }
-    function nextPlayer(){ return G.players[nextIndex()]; }
-
-    function normalizeTurn(){
-      // ensure current has cards; otherwise advance
-      const n=G.players.length;
-      for(let step=0; step<n; step++){
-        if(current().hand.length>0) return;
-        G.turnIndex = (G.turnIndex+1)%n;
-      }
-    }
-
-    function checkFinish(){
-      let alive=0, last=null;
-      for(const p of G.players){
-        if(p.hand.length>0){ alive++; last=p; }
-      }
-      if(alive<=1){
-        G.finished=true;
-        G.loserName = last? last.name : "不明";
-        G.message = `ゲーム終了！負け（ジョーカー持ち）は「${G.loserName}」です。`;
-      }
-    }
-
-    function advanceTurn(){
-      const n=G.players.length;
-      for(let step=1; step<=n; step++){
-        const i=(G.turnIndex+step)%n;
-        if(G.players[i].hand.length>0){ G.turnIndex=i; return; }
-      }
-    }
-
-    function hasRank(hand, rank){
-      return hand.some(c=>c.rank!=="Joker" && c.rank===rank);
-    }
-
-    function pickIndexByDifficulty(cpuHand, targetHand){
-      const n=targetHand.length;
-      if(n<=1) return 0;
-      const r = ()=> (Math.random()*n)|0;
-
-      if(G.difficulty==="EASY") return r();
-
-      const good=[], nonJoker=[];
-      for(let i=0;i<n;i++){
-        const c=targetHand[i];
-        if(c.rank!=="Joker") nonJoker.push(i);
-        if(c.rank!=="Joker" && hasRank(cpuHand, c.rank)) good.push(i);
-      }
-
-      if(G.difficulty==="ONI"){
-        if(good.length) return good[(Math.random()*good.length)|0];
-        if(nonJoker.length) return nonJoker[(Math.random()*nonJoker.length)|0];
-        return r();
-      }
-      if(G.difficulty==="HARD"){
-        if(good.length) return good[(Math.random()*good.length)|0];
-        return (Math.random()<0.9)?0:r();
-      }
-      // NORMAL
-      return r();
-    }
-
-    // ========= animation helpers =========
-    function playDrawAnimation(fromEl, toEl){
-      // character sync
-      pulseClass($("ch-me"), "reach", 480);
-      pulseClass($("ch-next"), "react", 320);
-
-      // fly card
-      const fly = $("flyCard");
-      if(!fly || !fromEl || !toEl) return Promise.resolve();
-
-      const fr = fromEl.getBoundingClientRect();
-      const tr = toEl.getBoundingClientRect();
-
-      const startX = fr.left + fr.width/2;
-      const startY = fr.top  + fr.height/2;
-      const targetX = tr.left + Math.min(tr.width*0.5, 240);
-      const targetY = tr.top  + Math.min(tr.height*0.5, 80);
-
-      const dx = (targetX - startX);
-      const dy = (targetY - startY);
-
-      fly.style.left = (startX - fly.offsetWidth/2) + "px";
-      fly.style.top  = (startY - fly.offsetHeight/2) + "px";
-      fly.style.setProperty("--dx", dx+"px");
-      fly.style.setProperty("--dy", dy+"px");
-
-      fly.classList.remove("play");
-      void fly.offsetWidth;
-      fly.classList.add("play");
-
-      return new Promise(res=>setTimeout(res, 500));
-    }
-
-    // ========= actions =========
-    async function humanDraw(chosenIndex, clickedBtn){
-      if(G.busy || G.finished) return;
-      if(G.mode==="PVP" && G.locked) return;
-      if(current().cpu) return;
-
-      const target = nextPlayer();
-      if(target.hand.length===0){
-        G.message = "次の人が0枚なので自動で次へ。";
-        advanceTurn();
-        normalizeTurn();
-        renderAll();
-        maybeAutoCpu();
-        return;
-      }
-
-      G.busy=true;
-
-      // animation sync: from clicked back card -> my hand area
-      const toEl = $("myHand");
-      await playDrawAnimation(clickedBtn, toEl);
-
-      const idx = clamp(chosenIndex, 0, target.hand.length-1);
-      const taken = target.hand.splice(idx,1)[0];
-      current().hand.push(taken);
-
-      const removed = discardPairs(current().hand);
-      G.message = `${current().name} が ${target.name} から1枚引いた！` + (removed>0?` ペアを${removed/2}組捨てた！`:"");
-
-      checkFinish();
-      if(!G.finished){
-        advanceTurn();
-        normalizeTurn();
-      }
-
-      // PVP auto lock after action
-      if(G.mode==="PVP" && !G.finished){
-        G.locked = true;
-      }
-
-      G.busy=false;
-      renderAll();
-
-      if(G.mode==="PVP" && G.locked && !G.finished){
-        showLock();
-      }
-      maybeAutoCpu();
-    }
-
-    async function cpuStep(){
-      if(G.busy || G.finished) return;
-      if(!current().cpu) return;
-
-      G.busy=true;
-      $("cpuPanel").style.display = "";
-      $("cpuThinking").textContent = "CPUが考え中...";
-
-      // small wait for "thinking"
-      await new Promise(r=>setTimeout(r, 700));
-
-      const cpu = current();
-      const target = nextPlayer();
-      if(target.hand.length===0){
-        G.message = `${cpu.name} は次の人が0枚なのでスキップ。`;
-        advanceTurn(); normalizeTurn();
-        G.busy=false;
-        renderAll();
-        maybeAutoCpu();
-        return;
-      }
-
-      // animation: use first back card element if exists
-      const backs = $("opBacks").querySelector(".card.back");
-      const toEl = $("myHand");
-      // in CPU turn, myHand represents current's hand area too (we render current)
-      await playDrawAnimation(backs || $("opBacks"), toEl);
-
-      const pick = pickIndexByDifficulty(cpu.hand, target.hand);
-      const taken = target.hand.splice(clamp(pick,0,target.hand.length-1),1)[0];
-      cpu.hand.push(taken);
-
-      const removed = discardPairs(cpu.hand);
-      G.message = `${cpu.name} が ${target.name} から1枚引いた。` + (removed>0?` ペアを${removed/2}組捨てた。`:"");
-
-      checkFinish();
-      if(!G.finished){
-        advanceTurn(); normalizeTurn();
-      }
-
-      G.busy=false;
-      renderAll();
-      maybeAutoCpu();
-    }
-
-    function maybeAutoCpu(){
-      if(!G || G.finished) return;
-      if(G.mode==="CPU" && current().cpu){
-        // auto chain CPU turns
-        setTimeout(cpuStep, 50);
-      }
-    }
-
-    // ========= render =========
-    function showMenu(){
-      $("viewMenu").classList.remove("hidden");
-      $("viewGame").classList.add("hidden");
-      hideLock();
-    }
-    function showGame(){
-      $("viewMenu").classList.add("hidden");
-      $("viewGame").classList.remove("hidden");
-    }
-
-    function showLock(){
-      $("lockText").innerHTML = `手番：<b>${current().name}</b><br>準備できたら「解除」を押してね。`;
-      $("lockOverlay").classList.remove("hidden");
-      $("lockOverlay").setAttribute("aria-hidden","false");
-    }
-    function hideLock(){
-      $("lockOverlay").classList.add("hidden");
-      $("lockOverlay").setAttribute("aria-hidden","true");
-    }
-
-    function renderStatus(){
-      const grid = $("statusGrid");
-      grid.innerHTML="";
-      const n=G.players.length;
-      // 3列前提だけどスマホで1列になるCSSなのでOK
-      for(let i=0;i<n;i++){
-        const p=G.players[i];
-        const div=document.createElement("div");
-        div.className="pStat";
-        div.innerHTML = `
-          <div class="pName">${escapeHtml(p.name)}${i===G.turnIndex?"（手番）":""}</div>
-          <div class="pMeta">手札 <b>${p.hand.length}</b> 枚</div>
-        `;
-        grid.appendChild(div);
-      }
-    }
-
-    function renderCharacters(){
-      // UI上の「ch-me」は current、「ch-next」は next
-      $("meName").textContent = current().name;
-      $("nextName").textContent = nextPlayer().name;
-
-      $("meState").textContent = current().cpu ? "CPU（自動）" : "人間（操作）";
-      $("nextState").textContent = "次に引く相手";
-
-      // idle維持
-      if(!$("ch-me").classList.contains("idle")) $("ch-me").classList.add("idle");
-      if(!$("ch-next").classList.contains("idle")) $("ch-next").classList.add("idle");
-    }
-
-    function renderHumanArea(){
-      const isHumanTurn = !G.finished && !current().cpu && !(G.mode==="PVP" && G.locked);
-      const isCpuTurn   = !G.finished && current().cpu && !(G.mode==="PVP" && G.locked);
-
-      $("humanPanel").style.display = isHumanTurn ? "" : "none";
-      $("cpuPanel").style.display   = isCpuTurn ? "" : "none";
-
-      $("handTitle").textContent = `${current().name} の手札（見える）`;
-      $("targetNameInline").textContent = nextPlayer().name;
-
-      // current hand
-      const myHand=$("myHand");
-      myHand.innerHTML="";
-      for(const c of current().hand){
-        const d=document.createElement("div");
-        d.className="card faceUp";
-        d.innerHTML=`<div class="rank">${escapeHtml(displayCard(c))}</div>`;
-        myHand.appendChild(d);
-      }
-
-      // opponent backs (as clickable buttons only on human turn)
-      const backs=$("opBacks");
-      backs.innerHTML="";
-      const t = nextPlayer();
-      for(let i=0;i<t.hand.length;i++){
-        const b=document.createElement("div");
-        b.className="card back";
-        b.innerHTML=`<span class="backMark">🂠</span>`;
-        b.dataset.idx = String(i);
-        b.addEventListener("click", (ev)=>{
-          ev.preventDefault();
-          // multi-click prevention: disable pointer quickly
-          b.style.pointerEvents="none";
-          setTimeout(()=>b.style.pointerEvents="", 800);
-          humanDraw(i, b);
-        });
-        backs.appendChild(b);
-      }
-    }
-
-    function renderResult(){
-      if(G.finished){
-        $("resultPanel").style.display="";
-        $("resultText").innerHTML = `負け（ジョーカー持ち）：<b>${escapeHtml(G.loserName)}</b>`;
-      }else{
-        $("resultPanel").style.display="none";
-      }
-    }
-
-    function renderAll(){
-      if(!G) return;
-      showGame();
-
-      $("subTitle").textContent = `モード：${G.mode} / 強さ：${G.difficulty}`;
-      $("msgBox").textContent = G.message;
-
-      renderStatus();
-      renderCharacters();
-      renderResult();
-      renderHumanArea();
-
-      // lock button visibility
-      $("lockNowBtn").style.display = (G.mode==="PVP" && !G.finished) ? "" : "none";
-
-      // if locked show overlay
-      if(G.mode==="PVP" && G.locked && !G.finished){
-        showLock();
-      }else{
-        hideLock();
-      }
-    }
-
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#39;");
-    }
-
-    // ========= menu events / persistence =========
-    function loadSettings(){
-      try{
-        const raw = localStorage.getItem("babanuki_settings");
-        if(!raw) return;
-        const s = JSON.parse(raw);
-        if(s.players) $("playersSel").value = String(s.players);
-        if(s.mode) $("modeSel").value = s.mode;
-        if(s.diff) $("diffSel").value = s.diff;
-      }catch(_){}
-    }
-    function saveSettings(){
-      const s = {
-        players: Number($("playersSel").value),
-        mode: $("modeSel").value,
-        diff: $("diffSel").value
-      };
-      localStorage.setItem("babanuki_settings", JSON.stringify(s));
-    }
-
-    $("startBtn").addEventListener("click", ()=>{
-      saveSettings();
-      newGame({
-        players: Number($("playersSel").value),
-        mode: $("modeSel").value,
-        difficulty: $("diffSel").value
-      });
-    });
-
-    $("menuBtn").addEventListener("click", ()=>{
-      G=null;
-      showMenu();
-    });
-
-    $("restartBtn").addEventListener("click", ()=>{
-      // restart with same settings
-      const last = JSON.parse(localStorage.getItem("babanuki_settings")||"{}");
-      newGame({
-        players: Number(last.players||4),
-        mode: last.mode||"CPU",
-        difficulty: last.diff||"NORMAL"
-      });
-    });
-
-    $("unlockBtn").addEventListener("click", ()=>{
-      if(!G) return;
-      G.locked=false;
-      hideLock();
-      renderAll();
-      maybeAutoCpu();
-    });
-
-    $("lockNowBtn").addEventListener("click", ()=>{
-      if(!G || G.mode!=="PVP" || G.finished) return;
-      G.locked=true;
-      showLock();
-    });
-
-    // init
-    loadSettings();
-    showMenu();
-  </script>
 </body>
 </html>
